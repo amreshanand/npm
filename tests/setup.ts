@@ -1,4 +1,37 @@
 import "@testing-library/jest-dom";
+import { cleanup } from "@testing-library/react";
+import { afterEach, vi } from "vitest";
+
+let rafId = 0;
+const rafCallbacks = new Map<number, FrameRequestCallback>();
+
+const mockRaf = vi.fn((cb: FrameRequestCallback) => {
+  rafId++;
+  rafCallbacks.set(rafId, cb);
+  return rafId;
+});
+
+const mockCaf = vi.fn((id: number) => {
+  rafCallbacks.delete(id);
+});
+
+global.requestAnimationFrame = mockRaf;
+window.requestAnimationFrame = mockRaf;
+global.cancelAnimationFrame = mockCaf;
+window.cancelAnimationFrame = mockCaf;
+
+export function triggerAnimationFrame(time = performance.now()) {
+  const current = Array.from(rafCallbacks.entries());
+  rafCallbacks.clear();
+  current.forEach(([_, cb]) => cb(time));
+}
+
+// Automatically cleanup after each test
+afterEach(() => {
+  cleanup();
+  rafCallbacks.clear();
+  vi.clearAllMocks();
+});
 
 // Mock HTMLCanvasElement and CanvasRenderingContext2D for test environment
 class MockCanvasRenderingContext2D {

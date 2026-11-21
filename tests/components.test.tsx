@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, act } from "@testing-library/react";
+import { render, act } from "@testing-library/react";
 import {
   Snowfall,
   Rain,
@@ -14,14 +14,15 @@ import {
 
 describe("Snowfall Component", () => {
   it("renders with default props", () => {
-    const { container } = render(<Snowfall />);
+    const { container, unmount } = render(<Snowfall />);
     const canvas = container.querySelector("canvas");
     expect(canvas).toBeInTheDocument();
     expect(canvas).toHaveAttribute("aria-hidden", "true");
+    unmount();
   });
 
   it("applies custom props, style, and className", () => {
-    const { container } = render(
+    const { container, unmount } = render(
       <Snowfall
         count={50}
         speed={2}
@@ -36,6 +37,7 @@ describe("Snowfall Component", () => {
     expect(canvas).toHaveClass("custom-snowfall");
     expect(canvas).toHaveAttribute("id", "test-snow");
     expect(canvas).toHaveStyle({ zIndex: "5" });
+    unmount();
   });
 
   it("cleans up animation loop on unmount", () => {
@@ -55,7 +57,7 @@ describe("Rain Component", () => {
   });
 
   it("accepts custom rain props", () => {
-    const { container } = render(
+    const { container, unmount } = render(
       <Rain
         intensity={80}
         speed={22}
@@ -67,12 +69,13 @@ describe("Rain Component", () => {
     );
     const canvas = container.querySelector("canvas");
     expect(canvas).toBeInTheDocument();
+    unmount();
   });
 });
 
 describe("Confetti Component", () => {
   it("renders when trigger is true", () => {
-    const { container } = render(
+    const { container, unmount } = render(
       <Confetti
         trigger={true}
         particleCount={100}
@@ -82,16 +85,18 @@ describe("Confetti Component", () => {
     );
     const canvas = container.querySelector("canvas");
     expect(canvas).toBeInTheDocument();
+    unmount();
   });
 
   it("returns null when trigger is false and inactive", () => {
-    const { container } = render(<Confetti trigger={false} />);
+    const { container, unmount } = render(<Confetti trigger={false} />);
     expect(container.querySelector("canvas")).toBeNull();
+    unmount();
   });
 
-  it("fires onComplete callback when burst finishes", () => {
+  it("accepts onComplete callback", () => {
     const onComplete = vi.fn();
-    render(
+    const { unmount } = render(
       <Confetti
         trigger={true}
         particleCount={20}
@@ -99,32 +104,34 @@ describe("Confetti Component", () => {
         onComplete={onComplete}
       />
     );
-    // Component mounted with onComplete handler
     expect(onComplete).toBeDefined();
+    unmount();
   });
 });
 
 describe("Sparkles Component", () => {
   it("renders sparkles canvas", () => {
-    const { container } = render(
+    const { container, unmount } = render(
       <Sparkles density={30} color="#ffdd00" glow={true} shape="star" />
     );
     const canvas = container.querySelector("canvas");
     expect(canvas).toBeInTheDocument();
+    unmount();
   });
 
   it("supports different shapes", () => {
-    const { rerender, container } = render(<Sparkles shape="circle" />);
+    const { rerender, container, unmount } = render(<Sparkles shape="circle" />);
     expect(container.querySelector("canvas")).toBeInTheDocument();
 
     rerender(<Sparkles shape="cross" />);
     expect(container.querySelector("canvas")).toBeInTheDocument();
+    unmount();
   });
 });
 
 describe("Aurora Component", () => {
   it("renders aurora with multiple ribbons and custom blur", () => {
-    const { container } = render(
+    const { container, unmount } = render(
       <Aurora
         colors={["#00ff87", "#60efff", "#7b2cbf"]}
         intensity={1.2}
@@ -135,6 +142,7 @@ describe("Aurora Component", () => {
     const canvas = container.querySelector("canvas");
     expect(canvas).toBeInTheDocument();
     expect(canvas).toHaveStyle({ filter: "blur(30px)" });
+    unmount();
   });
 });
 
@@ -163,7 +171,7 @@ describe("CursorTrail Component", () => {
 
 describe("ParticleField Component", () => {
   it("renders interactive particle mesh", () => {
-    const { container } = render(
+    const { container, unmount } = render(
       <ParticleField
         density={50}
         connectionLines={true}
@@ -175,22 +183,24 @@ describe("ParticleField Component", () => {
     );
     const canvas = container.querySelector("canvas");
     expect(canvas).toBeInTheDocument();
+    unmount();
   });
 
   it("supports attract and grab modes", () => {
-    const { rerender, container } = render(
+    const { rerender, container, unmount } = render(
       <ParticleField interactionMode="attract" />
     );
     expect(container.querySelector("canvas")).toBeInTheDocument();
 
     rerender(<ParticleField interactionMode="grab" />);
     expect(container.querySelector("canvas")).toBeInTheDocument();
+    unmount();
   });
 });
 
 describe("MeteorShower Component", () => {
   it("renders shooting stars effect", () => {
-    const { container } = render(
+    const { container, unmount } = render(
       <MeteorShower
         frequency={2}
         speed={20}
@@ -201,5 +211,6 @@ describe("MeteorShower Component", () => {
     );
     const canvas = container.querySelector("canvas");
     expect(canvas).toBeInTheDocument();
+    unmount();
   });
 });

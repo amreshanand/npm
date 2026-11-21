@@ -1,4 +1,4 @@
-import { useState, useEffect, RefObject } from "react";
+import { useState, useEffect, useRef, RefObject } from "react";
 import { setupCanvas } from "../core/canvas/canvas";
 import { Dimensions } from "../types";
 
@@ -9,13 +9,16 @@ export interface UseCanvasResizeOptions {
 
 /**
  * Hook that keeps an HTMLCanvasElement correctly sized to either its parent container
- * or the full viewport window, handling high-DPI screens cleanly.
+ * or the full viewport window, handling high-DPI screens cleanly and preventing unnecessary re-renders.
  */
 export function useCanvasResize(
   canvasRef: RefObject<HTMLCanvasElement | null>,
   options: UseCanvasResizeOptions = {}
 ): Dimensions {
   const { containerRef, onResize } = options;
+  const onResizeRef = useRef(onResize);
+  onResizeRef.current = onResize;
+
   const [dimensions, setDimensions] = useState<Dimensions>({
     width: 0,
     height: 0,
@@ -39,14 +42,25 @@ export function useCanvasResize(
         width = Math.max(1, Math.floor(rect.width || window.innerWidth));
         height = Math.max(1, Math.floor(rect.height || window.innerHeight));
       } else {
-        width = window.innerWidth;
-        height = window.innerHeight;
+        width = window.innerWidth || 800;
+        height = window.innerHeight || 600;
       }
 
       const dpr = typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1;
       const newDims = setupCanvas(canvas, width, height, dpr);
-      setDimensions(newDims);
-      onResize?.(newDims);
+
+      setDimensions((prev) => {
+        if (
+          prev.width === newDims.width &&
+          prev.height === newDims.height &&
+          prev.dpr === newDims.dpr
+        ) {
+          return prev;
+        }
+        return newDims;
+      });
+
+      onResizeRef.current?.(newDims);
     };
 
     updateSize();
@@ -69,7 +83,7 @@ export function useCanvasResize(
         resizeObserver.disconnect();
       }
     };
-  }, [canvasRef, containerRef, onResize]);
+  }, [canvasRef, containerRef]);
 
   return dimensions;
 }
