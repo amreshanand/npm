@@ -1,5 +1,5 @@
 {
-  "name": "atmosfx",
+  "name": "@amresh8241/atmosfx",
   "version": "1.0.0",
   "description": "Production-ready, highly customizable, lightweight visual effects and animation library for React.",
   "type": "module",
